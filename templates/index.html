@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discounted Cash Flow Calculator</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: 0.3s;
+            border-radius: 15px;
+        }
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .custom-file-label::after {
+            content: "Browse";
+        }
+        .custom-file-input:lang(en) ~ .custom-file-label::after {
+            content: "Browse";
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h2 class="card-title mb-4" style="color: #007bff;">Discounted Cash Flow Calculator</h2>
+                        {% if error %}
+                            <div class="alert alert-danger" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endif %}
+                        <form action="/calculate" method="post" enctype="multipart/form-data">
+                            <div class="custom-file mb-3">
+                                <input type="file" class="custom-file-input" id="futureFile" name="futureFile" accept=".xlsx" required>
+                                <label class="custom-file-label" for="futureFile">Upload Future Value Excel File</label>
+                            </div>
+                            <div class="custom-file mb-3">
+                                <input type="file" class="custom-file-input" id="cashflowFile" name="cashflowFile" accept=".xlsx" required>
+                                <label class="custom-file-label" for="cashflowFile">Upload Cash Flow Pattern Excel File</label>
+                            </div>
+                            <div class="custom-file mb-3">
+                                <input type="file" class="custom-file-input" id="interestFile" name="interestFile" accept=".xlsx" required>
+                                <label class="custom-file-label" for="interestFile">Upload Interest Rates Excel File</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </form>
+                        <div class="mt-4">
+                            <p>Download Example Files:</p>
+                            <ul>
+                                <li><a href="{{ url_for('download_example', filename='future_value.xlsx') }}">Future Value Example</a></li>
+                                <li><a href="{{ url_for('download_example', filename='cashflow.xlsx') }}">Cashflow Pattern Example</a></li>
+                                <li><a href="{{ url_for('download_example', filename='interest_rates.xlsx') }}">Interest Rates Example</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("futureFile").addEventListener("change", function() {
+            var fileName = this.files[0].name;
+            var nextSibling = this.nextElementSibling;
+            nextSibling.innerText = fileName;
+        });
+
+        document.getElementById("cashflowFile").addEventListener("change", function() {
+            var fileName = this.files[0].name;
+            var nextSibling = this.nextElementSibling;
+            nextSibling.innerText = fileName;
+        });
+
+        document.getElementById("interestFile").addEventListener("change", function() {
+            var fileName = this.files[0].name;
+            var nextSibling = this.nextElementSibling;
+            nextSibling.innerText = fileName;
+        });
+    </script>
+</body>
+</html>
