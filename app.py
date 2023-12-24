@@ -27,7 +27,7 @@ def calculate():
         return render_template('result.html', present_values=present_values)
 
     except Exception as e:
-        return render_template('index.html', error=str(e))
+        return render_template('index.html', error=str("!!! Make sure that the inputs you loaded are correct."))
 
 @app.route('/export/<present_values>', methods=['GET'])
 def export_to_excel(present_values):
@@ -41,8 +41,8 @@ def export_to_excel(present_values):
         df.to_excel(excel_output, index=False, sheet_name='Discounted_Cash_Flows')
         excel_output.seek(0)
         return send_file(excel_output,
-                         attachment_filename='discounted_cash_flows.xlsx',
-                         as_attachment=True)
+                         as_attachment=True,
+                         download_name='discounted_cash_flows.xlsx')
 
     except Exception as e:
         return jsonify({'error': str(e)})
