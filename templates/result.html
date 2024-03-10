@@ -20,15 +20,15 @@
                                 <tr>
                                     <th scope="col">Group</th>
                                     <th scope="col">Period</th>
-                                    <th scope="col">Value</th>
+                                    <th scope="col">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for i in range(0, present_values|length) %}
+                                {% for item in present_values %}
                                     <tr>
-                                        <td>{{ present_values[i]["Group"]}}</td>
-                                        <td>{{ present_values[i]["Period"]}}</td>
-                                        <td>{{ "%.2f"|format(present_values[i]["Present_Value"]) }}</td>
+                                        <td>{{ item["Group"] }}</td>
+                                        <td>{{ item["Period"] }}</td>
+                                        <td>{{ item["Amount"] }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

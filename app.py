@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, send_file, jsonify
-import pandas as pd
 from io import BytesIO
 import json
-from calculate_discounted_cashflow import calculate_discounted_cashflow
+from flask import Flask, jsonify,render_template, request, send_file
+import pandas as pd
+from test import calculate_discounted_cashflow
 
 
 app = Flask(__name__)
@@ -17,17 +17,19 @@ def calculate():
         future_file = request.files['futureFile']
         cashflow_file = request.files['cashflowFile']
         interest_file = request.files['interestFile']
-
         df_future = pd.read_excel(future_file)
         df_cashflow = pd.read_excel(cashflow_file)
         df_interest = pd.read_excel(interest_file)
+        present_values = calculate_discounted_cashflow(df_interest,df_cashflow,df_future)
 
-        present_values = calculate_discounted_cashflow(df_future, df_cashflow, df_interest)
+        # output = BytesIO()
+        # with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        #     present_values.to_excel(writer, sheet_name="Sheet1")
+        # output.seek(0)
 
         return render_template('result.html', present_values=present_values)
-
     except Exception as e:
-        return render_template('index.html', error=str(e))
+        return render_template('index.html',error=str(e))
 
 @app.route('/export/<present_values>', methods=['GET'])
 def export_to_excel(present_values):
@@ -37,11 +39,12 @@ def export_to_excel(present_values):
             raise ValueError("Present values not found in the URL parameter.")
         present_values = json.loads(present_values_json)
         df = pd.DataFrame(present_values)
+        df=df[["Group","Period","Amount"]]
         excel_output = BytesIO()
         df.to_excel(excel_output, index=False, sheet_name='Discounted_Cash_Flows')
         excel_output.seek(0)
         return send_file(excel_output,
-                         attachment_filename='discounted_cash_flows.xlsx',
+                         download_name='discounted_cash_flows.xlsx',
                          as_attachment=True)
 
     except Exception as e:
