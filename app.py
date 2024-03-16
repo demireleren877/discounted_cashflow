@@ -2,7 +2,7 @@ from io import BytesIO
 import json
 from flask import Flask, jsonify,render_template, request, send_file
 import pandas as pd
-from test import calculate_discounted_cashflow
+from discounted_cashflow import calculate_discounted_cashflow
 
 
 app = Flask(__name__)
