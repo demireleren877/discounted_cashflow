@@ -1,8 +1,9 @@
 from io import BytesIO
 import json
-from flask import Flask, jsonify,render_template, request, send_file
+from flask import Flask, jsonify,render_template, request, send_file,redirect, url_for
 import pandas as pd
 from discounted_cashflow import calculate_discounted_cashflow
+from werkzeug.exceptions import MethodNotAllowed
 
 
 app = Flask(__name__)
@@ -11,16 +12,25 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.errorhandler(MethodNotAllowed)
+def handle_method_not_allowed(e):
+    return redirect(url_for('index'))
+
 @app.route('/calculate', methods=['POST'])
 def calculate():
     try:
-        future_file = request.files['futureFile']
-        cashflow_file = request.files['cashflowFile']
-        interest_file = request.files['interestFile']
-        df_future = pd.read_excel(future_file)
-        df_cashflow = pd.read_excel(cashflow_file)
-        df_interest = pd.read_excel(interest_file)
-        present_values = calculate_discounted_cashflow(df_interest,df_cashflow,df_future)
+        # future_file = request.files['futureFile']
+        # cashflow_file = request.files['cashflowFile']
+        # interest_file = request.files['interestFile']
+        # df_future = pd.read_excel(future_file)
+        # df_cashflow = pd.read_excel(cashflow_file)
+        # df_interest = pd.read_excel(interest_file)
+
+        effect = request.form.get('rate-display',default=0,type=float)
+        df_interest = pd.read_excel("QUOTES.xlsx")
+        df_cashflow = pd.read_excel("cashflow.xlsx")
+        df_future = pd.read_excel("future_value.xlsx")
+        present_values = calculate_discounted_cashflow(df_interest,df_cashflow,df_future,effect)
 
         # output = BytesIO()
         # with pd.ExcelWriter(output, engine="xlsxwriter") as writer:

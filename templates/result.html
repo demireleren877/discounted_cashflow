@@ -1,20 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculation Result</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        .rate-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rate-control button {
+            margin: 0 5px;
+        }
+
+        .rate-display {
+            margin: 0 10px;
+            font-size: 1.2em;
+            width: 70px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+
+        .modal-content {
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-title {
+            text-align: center;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 </head>
+
 <body class="bg-light">
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <a href="{{ url_for('export_to_excel', present_values=present_values | tojson | safe) }}"
+                                class="btn btn-success align-items-center">Export to Excel</a>
+                            <h3 class="text-center">Calculation Result</h3>
+                            <button id="apply-effect-button" class="btn btn-primary" data-toggle="modal"
+                                data-target="#effectModal">Apply Effect</button>
+                        </div>
 
-                        <a href="{{ url_for('export_to_excel', present_values=present_values | tojson | safe) }}" class="btn btn-success">Export to Excel</a>
-                        <h2 class="card-title text-center mb-4">Calculation Result</h2>
+
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -25,11 +65,11 @@
                             </thead>
                             <tbody>
                                 {% for item in present_values %}
-                                    <tr>
-                                        <td>{{ item["Group"] }}</td>
-                                        <td>{{ item["Period"] }}</td>
-                                        <td>{{ item["Amount"] }}</td>
-                                    </tr>
+                                <tr>
+                                    <td>{{ item["Group"] }}</td>
+                                    <td>{{ item["Period"] }}</td>
+                                    <td>{{ item["Amount"] }}</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -38,5 +78,63 @@
             </div>
         </div>
     </div>
+    <form action="{{ url_for('calculate') }}" method="post">
+        <div class="modal fade" id="effectModal" tabindex="-1" role="dialog" aria-labelledby="effectModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="effectModalLabel">Effect Rate</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="rate-control">
+                            <button id="rate-down" type="button" class="btn btn-secondary">-</button>
+                            <input type="text" name="rate-display" id="rate-display" class="rate-display" value="0.01" readonly>
+                            <button id="rate-up" type="button" class="btn btn-secondary">+</button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="recalculate-button" type="submit" class="btn btn-primary">Recalculate</button>
+                        <button id="cancel-button" data-dismiss="modal" class="btn btn-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+        integrity="sha384-cs4RJuvw4gkWFujC6NHX3e0KFr6v9GgoF9AA/KNl3lD7i6y2RkzDGLG8+bQ6q/Xr"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script>
+        let effectRate = 0.01;
+
+        document.getElementById("rate-up").addEventListener("click", function () {
+            effectRate += 0.01;
+            document.getElementById("rate-display").value = effectRate.toFixed(2);
+        });
+
+        document.getElementById("rate-down").addEventListener("click", function () {
+            effectRate = Math.max(0, effectRate - 0.01);
+            document.getElementById("rate-display").value = effectRate.toFixed(2);
+        });
+
+        window.onload = function() {
+            if (window.history && window.history.pushState) {
+                window.history.pushState('', '', window.location.pathname);
+                
+                window.onpopstate = function() {
+                    window.history.pushState('', '', window.location.pathname);
+                };
+            }
+        };
+
+
+    </script>
 </body>
+
 </html>
