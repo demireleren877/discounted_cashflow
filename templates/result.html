@@ -35,6 +35,12 @@
         .modal-title {
             text-align: center;
         }
+        .myCollapse {
+            display: none;
+        }
+        .myCollapse.in {
+            display: table-row;
+        }
     </style>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -58,19 +64,29 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th scope="col">Group</th>
-                                    <th scope="col">Period</th>
-                                    <th scope="col">Amount</th>
+                                    {% for itm in column_names %}
+                                    <th scope="col">{{itm}}</th>
+                                    {% endfor %}
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in present_values %}
-                                <tr>
-                                    <td>{{ item["Group"] }}</td>
-                                    <td>{{ item["Period"] }}</td>
-                                    <td>{{ item["Amount"] }}</td>
-                                </tr>
+                                {% for smr in sum_of_cf %}
+                                    <tr  id="package_id_1" data-toggle="myCollapse" data-target=".{{ smr[0] }}">
+                                        <td style="font-weight: bold;">{{ smr[0].upper() }}</td>
+                                        <td style="font-weight: bold;">{{ smr[1] }}</td>
+                                        <td style="font-weight: bold;">{{ smr[2] }}</td>
+                                    </tr>
+                                    {% for item in present_values %}
+                                        {% if smr[0] == item["Group"] %}
+                                            <tr class="{{ item['Group'] }} myCollapse in">
+                                                <td>{{ item["Group"] }}</td>
+                                                <td>{{ item["Period"] }}</td>
+                                                <td>{{ item["Amount"] }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
                                 {% endfor %}
+                                
                             </tbody>
                         </table>
                     </div>
@@ -121,6 +137,11 @@
         document.getElementById("rate-down").addEventListener("click", function () {
             effectRate = Math.max(0, effectRate - 0.01);
             document.getElementById("rate-display").value = effectRate.toFixed(2);
+        });
+
+        $("[data-toggle=myCollapse]").click(function( ev ) {
+            ev.preventDefault();
+            $(this.getAttribute('data-target')).toggleClass("in");
         });
 
         window.onload = function() {

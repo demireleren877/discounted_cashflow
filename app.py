@@ -5,7 +5,7 @@ import pandas as pd
 from discounted_cashflow import calculate_discounted_cashflow
 from werkzeug.exceptions import MethodNotAllowed
 
-
+pd.options.display.float_format = '{:.2f}'.format
 app = Flask(__name__)
 
 @app.route('/')
@@ -31,13 +31,19 @@ def calculate():
         df_cashflow = pd.read_excel("cashflow.xlsx")
         df_future = pd.read_excel("future_value.xlsx")
         present_values = calculate_discounted_cashflow(df_interest,df_cashflow,df_future,effect)
+        pv_df = pd.DataFrame(present_values)
+        sum_of_cf = pv_df.groupby(["Group"]).sum().reset_index()
+        sum_of_cf["Period"] = 'Total'
+        sum_of_cf["Amount"] = sum_of_cf["Amount"].round(2)
+        
 
         # output = BytesIO()
         # with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         #     present_values.to_excel(writer, sheet_name="Sheet1")
         # output.seek(0)
 
-        return render_template('result.html', present_values=present_values)
+        return render_template('result.html',column_names=pv_df.columns.values, 
+        present_values=present_values,sum_of_cf=list(sum_of_cf.values.tolist()))
     except Exception as e:
         return render_template('index.html',error=str(e))
 
@@ -54,7 +60,7 @@ def export_to_excel(present_values):
         df.to_excel(excel_output, index=False, sheet_name='Discounted_Cash_Flows')
         excel_output.seek(0)
         return send_file(excel_output,
-                         download_name='discounted_cash_flows.xlsx',
+                         attachment_filename='discounted_cash_flows.xlsx',
                          as_attachment=True)
 
     except Exception as e:
