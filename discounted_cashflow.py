@@ -7,9 +7,10 @@ import datetime
 # future_value = pd.read_excel("future_value.xlsx")
 
 def calculate_discounted_cashflow(rates, cashflow,future_value,effect):
-    filtered_rates = rates[rates["Year"] == 2023]
-    filtered_rates["Rate"]=filtered_rates["Rate"]+float(effect)
-    rates.update(filtered_rates)
+    rates.loc[rates["Year"]==2023,"Rate"] = rates["Rate"]+float(effect)
+    # filtered_rates = rates[rates["Year"] == 2023]
+    # filtered_rates["Rate"]=filtered_rates["Rate"]+float(effect)
+    # rates.update(filtered_rates)
     rates2 = rates.copy()
     rates["Var1"] = datetime.datetime.now().year -1 - rates["Year"]
     rates["Var2"] = rates["Var1"] * 12
