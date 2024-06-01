@@ -46,7 +46,7 @@ def calculate_discounted_cashflow(rates, cashflow,future_value,effect):
     all_joined.drop(['Year','Currency','Value','UoA','CF_Pattern','key','Year_x','Period_x','Currency_x','disc_rate'],axis=1,inplace=True)
     discounted_cashflows = []
     for i in range(len(all_joined['disc_amount'])):
-        cf = {"Group":all_joined["Group"][i],"Period":int(all_joined["Period"][i]),"Amount":float("{:.2f}".format(all_joined["disc_amount"][i]))}
+        cf = {"Group":all_joined["Group"][i],"Period":int(all_joined["Period"][i]),"Amount":float("{:.4f}".format(all_joined["disc_amount"][i]))}
         discounted_cashflows.append(cf)
     return discounted_cashflows
 
