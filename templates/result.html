@@ -107,12 +107,23 @@
         </div>
         <div class="mt-5 col-md-6">
             <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card">
+                        <div style="height:auto; width:auto; margin-left: 1vw;">
+                            <canvas id="piechart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="mt-5 col-md-6">
+            <div class="row justify-content-center">
                 <div class="col-md-10" style="width: 100%; height: auto;">
                     <canvas id="piechart"></canvas>
                 </div>
 
             </div>
-        </div>
+        </div> -->
     </div>
     <form action="{{ url_for('calculate') }}" method="post">
         <div class="modal fade" id="effectModal" tabindex="-1" role="dialog" aria-labelledby="effectModalLabel"
@@ -217,16 +228,49 @@
         var data = present_values.map(function (item) {
             return item['2'];
         });
+        var colors = [];
+        labels.forEach((element) => {
+            var hex_color = getRandomColorHex();
+            colors.push(hex_color);
+        });
+
+        function getRandomColorHex() {
+            var hex = "0123456789ABCDEF",
+                color = "#";
+            for (var i = 1; i <= 6; i++) {
+                color += hex[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        const values = data
+        const valueSum = values.reduce((a, b) => a + b, 0);
+        const thresholdPercent = 10;
+        const slices = values.map((v, i) => ({ label: labels[i], value: v }))
+            .reduce((accumulator, currObj) => {
+                const percent = 100 * currObj.value / valueSum;
+                if (percent < thresholdPercent) {
+                    const others = accumulator.find(o => o.label == 'Others');
+                    if (!others) {
+                        return accumulator.concat({ label: 'Others', value: currObj.value });
+                    }
+                    others.value += currObj.value;
+                } else {
+                    accumulator.push(currObj);
+                }
+                return accumulator;
+            }, []);
 
         // Create chart
         var ctx = document.getElementById('piechart')
         var myChart = new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: labels,
+                labels: slices.map(o => o.label),
                 datasets: [{
                     label: 'Amounts by Group',
-                    data: data,
+                    data: slices.map(o => o.value),
+                    backgroundColor: colors,
                     borderWidth: 1
                 }]
             },
@@ -234,20 +278,30 @@
                 responsive: true,
                 maintainAspectRatio: true,
                 "plugins": {
-                    decimation:{
-                        threshold:30000000
+                    title: {
+                        display: true,
+                        text: 'Group Weight Ratio',
+                        padding: {
+                            top: 30,
+                        },
+                        font: {
+                            size: 16,
+                            weight: 'bold',
+                            family: 'Arial',
+                            style: 'normal'
+                        },
                     },
-                    datalabels:{
-                        formatter:((value,context)=>{
+                    datalabels: {
+                        formatter: ((value, context) => {
                             const datapoints = context.chart.data.datasets[0].data;
-                            function totalSum(total,datapoint){
+                            function totalSum(total, datapoint) {
                                 return total + datapoint
                             }
-                            const totalValue = datapoints.reduce(totalSum,0);
-                            const percentageValue = (value/totalValue * 100).toFixed(2)
-                            return percentageValue+'%';
+                            const totalValue = datapoints.reduce(totalSum, 0);
+                            const percentageValue = (value / totalValue * 100).toFixed(2)
+                            return percentageValue + '%';
                         }),
-                        color:"#fff"
+                        color: "#fff"
                     },
                     "legend": {
                         "display": true,
@@ -256,36 +310,8 @@
                     }
                 }
             },
-            plugins:[ChartDataLabels]
+            plugins: [ChartDataLabels]
         });
-
-        // var data = new google.visualization.DataTable();
-        // data.addColumn('string', 'Group');
-        // data.addColumn('number', 'Amount');
-
-        // console.log(present_values[0])
-        // for (var i = 0; i < present_values.length; i++) {
-
-        //     data.addRow([present_values[i]['0'], present_values[i]['2']]);
-        // }
-
-        // var container = document.getElementById('piechart');
-        // var containerWidth = container.offsetWidth;
-
-        // var options = {
-        //     'title': 'Amounts by Group',
-        //     legend: {
-        //         'position': 'right', 'alignment': 'center',
-        //     },
-        //     sliceVisibilityThreshold: .1,
-        //     'width': containerWidth,
-        //     'height': containerWidth * 0.87,
-
-        // };
-
-
-        // var chart = new google.visualization.PieChart(container);
-        // chart.draw(data, options);
 
     </script>
 
