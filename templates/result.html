@@ -220,13 +220,14 @@
 
     <script type="text/javascript">
 
-        var present_values = JSON.parse('{{ sum_of_cf | tojson | safe }}');
+        //var present_values = JSON.parse('{{ sum_of_cf | tojson | safe }}');
+        var present_values = JSON.parse('{{ diffArray | tojson | safe }}');
         var labels = present_values.map(function (item) {
             return item['0'];
         });
 
         var data = present_values.map(function (item) {
-            return item['2'];
+            return item['1'];
         });
         var colors = [];
         labels.forEach((element) => {
@@ -245,7 +246,7 @@
 
         const values = data
         const valueSum = values.reduce((a, b) => a + b, 0);
-        const thresholdPercent = 10;
+        const thresholdPercent = 5;
         const slices = values.map((v, i) => ({ label: labels[i], value: v }))
             .reduce((accumulator, currObj) => {
                 const percent = 100 * currObj.value / valueSum;

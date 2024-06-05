@@ -9,6 +9,8 @@ from werkzeug.exceptions import MethodNotAllowed
 
 pd.options.display.float_format = '{:.2f}'.format
 app = Flask(__name__)
+origin_present_values = []
+diffArray = []
 
 @app.route('/')
 def index():
@@ -20,6 +22,8 @@ def handle_method_not_allowed(e):
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
+    global origin_present_values
+    global diffArray 
     try:
         # future_file = request.files['futureFile']
         # cashflow_file = request.files['cashflowFile']
@@ -33,20 +37,32 @@ def calculate():
         df_cashflow = pd.read_excel("cashflow_tester.xlsx")
         df_future = pd.read_excel("future_value_tester.xlsx")
         present_values = calculate_discounted_cashflow(df_interest,df_cashflow,df_future,effect)
+        if effect == 0 :
+            origin_present_values = present_values
         pv_df = pd.DataFrame(present_values)
         sum_of_cf = pv_df.groupby(["Group"]).sum().reset_index()
         sum_of_cf["Period"] = 'Total'
         sum_of_cf["Amount"] = sum_of_cf["Amount"].round(4)  
         sum_of_cf = list(sum_of_cf.values.tolist())
-        print(type(present_values))
-
-        # output = BytesIO()
-        # with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        #     present_values.to_excel(writer, sheet_name="Sheet1")
-        # output.seek(0)
-
+        origin_pv_df = pd.DataFrame(origin_present_values)
+        origin_sum_of_cf = origin_pv_df.groupby(["Group"]).sum().reset_index()
+        origin_sum_of_cf["Period"] = 'Total'
+        origin_sum_of_cf["Amount"] = origin_sum_of_cf["Amount"].round(4)  
+        origin_sum_of_cf = list(origin_sum_of_cf.values.tolist())
+        
+        if effect != 0:
+            totalDiff = 0
+            for i in range(len(origin_sum_of_cf)):
+                totalDiff+=(origin_sum_of_cf[i][2]-sum_of_cf[i][2])
+                itm = [origin_sum_of_cf[i][0],(origin_sum_of_cf[i][2]-sum_of_cf[i][2])]
+                if itm[0] not in [x[0] for x in diffArray]:
+                    diffArray.append(itm)
+                else:
+                    diffArray[i][1]=itm[1]
+                    
+               
         return render_template('result.html',column_names=pv_df.columns.values, 
-        present_values= present_values,sum_of_cf=sum_of_cf)
+        present_values= present_values,sum_of_cf=sum_of_cf,diffArray=diffArray)
     except Exception as e:
         return render_template('index.html',error=str(e))
 
