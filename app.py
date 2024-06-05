@@ -1,6 +1,7 @@
 from io import BytesIO
 import io
 import json
+from random import shuffle
 from flask import Flask, jsonify,render_template, request, send_file,redirect, url_for
 import pandas as pd
 from discounted_cashflow import calculate_discounted_cashflow
@@ -24,19 +25,20 @@ def calculate():
         # cashflow_file = request.files['cashflowFile']
         # interest_file = request.files['interestFile']
         # df_future = pd.read_excel(future_file)
-        # df_cashflow = pd.read_excel(cashflow_file)
+        # df_cashflow = pd.read_excel(cashflow_file)w
         # df_interest = pd.read_excel(interest_file)
 
         effect = request.form.get('rate-display',default=0,type=float)
         df_interest = pd.read_excel("QUOTES.xlsx")
-        df_cashflow = pd.read_excel("cashflow.xlsx")
-        df_future = pd.read_excel("future_value.xlsx")
+        df_cashflow = pd.read_excel("cashflow_tester.xlsx")
+        df_future = pd.read_excel("future_value_tester.xlsx")
         present_values = calculate_discounted_cashflow(df_interest,df_cashflow,df_future,effect)
         pv_df = pd.DataFrame(present_values)
         sum_of_cf = pv_df.groupby(["Group"]).sum().reset_index()
         sum_of_cf["Period"] = 'Total'
-        sum_of_cf["Amount"] = sum_of_cf["Amount"].round(4)
-        
+        sum_of_cf["Amount"] = sum_of_cf["Amount"].round(4)  
+        sum_of_cf = list(sum_of_cf.values.tolist())
+        print(type(present_values))
 
         # output = BytesIO()
         # with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
@@ -44,9 +46,10 @@ def calculate():
         # output.seek(0)
 
         return render_template('result.html',column_names=pv_df.columns.values, 
-        present_values=present_values,sum_of_cf=list(sum_of_cf.values.tolist()))
+        present_values= present_values,sum_of_cf=sum_of_cf)
     except Exception as e:
         return render_template('index.html',error=str(e))
+
 
 @app.route('/export_to_excel', methods=['POST'])
 def export_to_excel():
